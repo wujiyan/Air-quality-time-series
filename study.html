@@ -1,0 +1,850 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Leo Wan" />
+  <meta name="date" content="2016-11-16" />
+  <title>Air Quality Analysis</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="http://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="http://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div class="slide titlepage">
+  <h1 class="title">Air Quality Analysis</h1>
+  <p class="author">
+Leo Wan
+  </p>
+  <p class="date">November 16, 2016</p>
+</div>
+<div id="description" class="slide section level1">
+<h1>Description</h1>
+<ul>
+<li>Dimention and variables</li>
+</ul>
+<pre><code>## &#39;data.frame&#39;:    9357 obs. of  15 variables:
+##  $ Date         : chr  &quot;3/10/2004&quot; &quot;3/10/2004&quot; &quot;3/10/2004&quot; &quot;3/10/2004&quot; ...
+##  $ Time         : chr  &quot;18:00:00&quot; &quot;19:00:00&quot; &quot;20:00:00&quot; &quot;21:00:00&quot; ...
+##  $ CO.GT.       : num  2.6 2 2.2 2.2 1.6 1.2 1.2 1 0.9 0.6 ...
+##  $ PT08.S1.CO.  : int  1360 1292 1402 1376 1272 1197 1185 1136 1094 1010 ...
+##  $ NMHC.GT.     : int  150 112 88 80 51 38 31 31 24 19 ...
+##  $ C6H6.GT.     : num  11.9 9.4 9 9.2 6.5 4.7 3.6 3.3 2.3 1.7 ...
+##  $ PT08.S2.NMHC.: int  1046 955 939 948 836 750 690 672 609 561 ...
+##  $ NOx.GT.      : int  166 103 131 172 131 89 62 62 45 -200 ...
+##  $ PT08.S3.NOx. : int  1056 1174 1140 1092 1205 1337 1462 1453 1579 1705 ...
+##  $ NO2.GT.      : int  113 92 114 122 116 96 77 76 60 -200 ...
+##  $ PT08.S4.NO2. : int  1692 1559 1555 1584 1490 1393 1333 1333 1276 1235 ...
+##  $ PT08.S5.O3.  : int  1268 972 1074 1203 1110 949 733 730 620 501 ...
+##  $ T            : num  13.6 13.3 11.9 11 11.2 11.2 11.3 10.7 10.7 10.3 ...
+##  $ RH           : num  48.9 47.7 54 60 59.6 59.2 56.8 60 59.7 60.2 ...
+##  $ AH           : num  0.758 0.726 0.75 0.787 0.789 ...</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Date</th>
+<th align="left">Time</th>
+<th align="right">CO_GT</th>
+<th align="right">S1_CO</th>
+<th align="right">NMHC_GT</th>
+<th align="right">C6H6_GT</th>
+<th align="right">S2_NMHC</th>
+<th align="right">NOx_GT</th>
+<th align="right">S3_NOx</th>
+<th align="right">NO2_GT</th>
+<th align="right">S4_NO2</th>
+<th align="right">S5_O3</th>
+<th align="right">T</th>
+<th align="right">RH</th>
+<th align="right">AH</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">3/10/2004</td>
+<td align="left">18:00:00</td>
+<td align="right">2.6</td>
+<td align="right">1360</td>
+<td align="right">150</td>
+<td align="right">11.9</td>
+<td align="right">1046</td>
+<td align="right">166</td>
+<td align="right">1056</td>
+<td align="right">113</td>
+<td align="right">1692</td>
+<td align="right">1268</td>
+<td align="right">13.6</td>
+<td align="right">48.9</td>
+<td align="right">0.7578</td>
+</tr>
+<tr class="even">
+<td align="left">3/10/2004</td>
+<td align="left">19:00:00</td>
+<td align="right">2.0</td>
+<td align="right">1292</td>
+<td align="right">112</td>
+<td align="right">9.4</td>
+<td align="right">955</td>
+<td align="right">103</td>
+<td align="right">1174</td>
+<td align="right">92</td>
+<td align="right">1559</td>
+<td align="right">972</td>
+<td align="right">13.3</td>
+<td align="right">47.7</td>
+<td align="right">0.7255</td>
+</tr>
+<tr class="odd">
+<td align="left">3/10/2004</td>
+<td align="left">20:00:00</td>
+<td align="right">2.2</td>
+<td align="right">1402</td>
+<td align="right">88</td>
+<td align="right">9.0</td>
+<td align="right">939</td>
+<td align="right">131</td>
+<td align="right">1140</td>
+<td align="right">114</td>
+<td align="right">1555</td>
+<td align="right">1074</td>
+<td align="right">11.9</td>
+<td align="right">54.0</td>
+<td align="right">0.7502</td>
+</tr>
+<tr class="even">
+<td align="left">3/10/2004</td>
+<td align="left">21:00:00</td>
+<td align="right">2.2</td>
+<td align="right">1376</td>
+<td align="right">80</td>
+<td align="right">9.2</td>
+<td align="right">948</td>
+<td align="right">172</td>
+<td align="right">1092</td>
+<td align="right">122</td>
+<td align="right">1584</td>
+<td align="right">1203</td>
+<td align="right">11.0</td>
+<td align="right">60.0</td>
+<td align="right">0.7867</td>
+</tr>
+<tr class="odd">
+<td align="left">3/10/2004</td>
+<td align="left">22:00:00</td>
+<td align="right">1.6</td>
+<td align="right">1272</td>
+<td align="right">51</td>
+<td align="right">6.5</td>
+<td align="right">836</td>
+<td align="right">131</td>
+<td align="right">1205</td>
+<td align="right">116</td>
+<td align="right">1490</td>
+<td align="right">1110</td>
+<td align="right">11.2</td>
+<td align="right">59.6</td>
+<td align="right">0.7888</td>
+</tr>
+<tr class="even">
+<td align="left">3/10/2004</td>
+<td align="left">23:00:00</td>
+<td align="right">1.2</td>
+<td align="right">1197</td>
+<td align="right">38</td>
+<td align="right">4.7</td>
+<td align="right">750</td>
+<td align="right">89</td>
+<td align="right">1337</td>
+<td align="right">96</td>
+<td align="right">1393</td>
+<td align="right">949</td>
+<td align="right">11.2</td>
+<td align="right">59.2</td>
+<td align="right">0.7848</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="description-1" class="slide section level1">
+<h1>Description</h1>
+<ul>
+<li>Missing values analysis</li>
+</ul>
+<p>How many missing values for each variable.</p>
+<table>
+<thead>
+<tr class="header">
+<th align="right">Date</th>
+<th align="right">Time</th>
+<th align="right">CO_GT</th>
+<th align="right">S1_CO</th>
+<th align="right">NMHC_GT</th>
+<th align="right">C6H6_GT</th>
+<th align="right">S2_NMHC</th>
+<th align="right">NOx_GT</th>
+<th align="right">S3_NOx</th>
+<th align="right">NO2_GT</th>
+<th align="right">S4_NO2</th>
+<th align="right">S5_O3</th>
+<th align="right">T</th>
+<th align="right">RH</th>
+<th align="right">AH</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">1683</td>
+<td align="right">366</td>
+<td align="right">8443</td>
+<td align="right">366</td>
+<td align="right">366</td>
+<td align="right">1639</td>
+<td align="right">366</td>
+<td align="right">1642</td>
+<td align="right">366</td>
+<td align="right">366</td>
+<td align="right">366</td>
+<td align="right">366</td>
+<td align="right">366</td>
+</tr>
+</tbody>
+</table>
+<p>NMHC_GT has too many missing values, so I deleted it.</p>
+</div>
+<div id="description-2" class="slide section level1">
+<h1>Description</h1>
+<ul>
+<li>Missing values analysis</li>
+</ul>
+<ol style="list-style-type: decimal">
+<li>Distribution of missing values of CO_GT</li>
+</ol>
+<p><img src="figure/unnamed-chunk-6-1.png" alt="plot of chunk unnamed-chunk-6" /><img src="figure/unnamed-chunk-6-2.png" alt="plot of chunk unnamed-chunk-6" /></p>
+<p>2.Distribution of missing values of S1_CO</p>
+<p><img src="figure/unnamed-chunk-7-1.png" alt="plot of chunk unnamed-chunk-7" /><img src="figure/unnamed-chunk-7-2.png" alt="plot of chunk unnamed-chunk-7" /></p>
+<p>3.Distribution of missing values of NOx_GT</p>
+<p><img src="figure/unnamed-chunk-8-1.png" alt="plot of chunk unnamed-chunk-8" /><img src="figure/unnamed-chunk-8-2.png" alt="plot of chunk unnamed-chunk-8" /></p>
+<p>4.Distribution of missing values of NO2_GT</p>
+<p><img src="figure/unnamed-chunk-9-1.png" alt="plot of chunk unnamed-chunk-9" /><img src="figure/unnamed-chunk-9-2.png" alt="plot of chunk unnamed-chunk-9" /></p>
+</div>
+<div id="description-3" class="slide section level1">
+<h1>Description</h1>
+<ul>
+<li>Missing values analysis</li>
+</ul>
+<p>This graph shows the concentration of missing values in detail. for each kind of gas, how many missing values does they each have every day.</p>
+<div class="figure">
+<img src="figure/unnamed-chunk-12-1.png" alt="plot of chunk unnamed-chunk-12" /><p class="caption">plot of chunk unnamed-chunk-12</p>
+</div>
+</div>
+<div id="description-4" class="slide section level1">
+<h1>Description</h1>
+<ul>
+<li>Missing values analysis</li>
+</ul>
+<p>Most missing values are concentrated in several specific days.</p>
+<p>Some sensors did not detect anything at 3AM or 4 AM.</p>
+<p>They are missing completely at random.</p>
+</div>
+<div id="description-5" class="slide section level1">
+<h1>Description</h1>
+<ul>
+<li>How to deal with missing values?</li>
+</ul>
+<p>Simply delete samples with NA values as we would still have enough samples(6941).</p>
+</div>
+<div id="description-6" class="slide section level1">
+<h1>Description</h1>
+<ul>
+<li>Density and correlation</li>
+</ul>
+<div class="figure">
+<img src="figure/unnamed-chunk-13-1.png" alt="plot of chunk unnamed-chunk-13" /><p class="caption">plot of chunk unnamed-chunk-13</p>
+</div>
+<p>See density of each variable and make transformation</p>
+<p><img src="figure/unnamed-chunk-14-1.png" alt="plot of chunk unnamed-chunk-14" /><img src="figure/unnamed-chunk-14-2.png" alt="plot of chunk unnamed-chunk-14" /><img src="figure/unnamed-chunk-14-3.png" alt="plot of chunk unnamed-chunk-14" /></p>
+</div>
+<div id="description-7" class="slide section level1">
+<h1>Description</h1>
+<ul>
+<li>Plot time series data of CO_GT(hourly)</li>
+</ul>
+<div class="figure">
+<img src="figure/unnamed-chunk-15-1.png" alt="plot of chunk unnamed-chunk-15" /><p class="caption">plot of chunk unnamed-chunk-15</p>
+</div>
+<p>To see the detailed pattern.</p>
+<div class="figure">
+<img src="figure/unnamed-chunk-16-1.png" alt="plot of chunk unnamed-chunk-16" /><p class="caption">plot of chunk unnamed-chunk-16</p>
+</div>
+</div>
+<div id="models" class="slide section level1">
+<h1>Models</h1>
+<ul>
+<li>Unitroot test</li>
+</ul>
+<div class="figure">
+<img src="figure/unnamed-chunk-17-1.png" alt="plot of chunk unnamed-chunk-17" /><p class="caption">plot of chunk unnamed-chunk-17</p>
+</div>
+<pre><code>## 
+## Title:
+##  Augmented Dickey-Fuller Test
+## 
+## Test Results:
+##   PARAMETER:
+##     Lag Order: 1
+##   STATISTIC:
+##     DF: -2.8488
+##   P VALUE:
+##     t: 0.004414 
+##     n: 0.2462 
+## 
+## Description:
+##  Thu Nov 17 23:42:47 2016 by user: fretwan</code></pre>
+</div>
+<div id="models-1" class="slide section level1">
+<h1>Models</h1>
+<ul>
+<li>Arima for hourly unlogged CO_GT</li>
+</ul>
+<p>lag = 0</p>
+<div class="figure">
+<img src="figure/unnamed-chunk-18-1.png" alt="plot of chunk unnamed-chunk-18" /><p class="caption">plot of chunk unnamed-chunk-18</p>
+</div>
+<p>lag = 1</p>
+<div class="figure">
+<img src="figure/unnamed-chunk-19-1.png" alt="plot of chunk unnamed-chunk-19" /><p class="caption">plot of chunk unnamed-chunk-19</p>
+</div>
+<p>lag = 2</p>
+<div class="figure">
+<img src="figure/unnamed-chunk-20-1.png" alt="plot of chunk unnamed-chunk-20" /><p class="caption">plot of chunk unnamed-chunk-20</p>
+</div>
+<p>lag = 5</p>
+<div class="figure">
+<img src="figure/unnamed-chunk-21-1.png" alt="plot of chunk unnamed-chunk-21" /><p class="caption">plot of chunk unnamed-chunk-21</p>
+</div>
+<p>lag = 8</p>
+<div class="figure">
+<img src="figure/unnamed-chunk-22-1.png" alt="plot of chunk unnamed-chunk-22" /><p class="caption">plot of chunk unnamed-chunk-22</p>
+</div>
+</div>
+<div id="models-2" class="slide section level1">
+<h1>Models</h1>
+<ul>
+<li>Hourly data of CO_GT is not stationary.</li>
+</ul>
+</div>
+<div id="description-8" class="slide section level1">
+<h1>Description</h1>
+<ul>
+<li>Plot time series data(daily)</li>
+</ul>
+<p>Take the average value per day</p>
+<div class="figure">
+<img src="figure/unnamed-chunk-24-1.png" alt="plot of chunk unnamed-chunk-24" /><p class="caption">plot of chunk unnamed-chunk-24</p>
+</div>
+<p>To see detailed pattern.</p>
+<div class="figure">
+<img src="figure/unnamed-chunk-25-1.png" alt="plot of chunk unnamed-chunk-25" /><p class="caption">plot of chunk unnamed-chunk-25</p>
+</div>
+</div>
+<div id="description-9" class="slide section level1">
+<h1>Description</h1>
+<ul>
+<li>Density of variables by day</li>
+</ul>
+<p><img src="figure/unnamed-chunk-26-1.png" alt="plot of chunk unnamed-chunk-26" /><img src="figure/unnamed-chunk-26-2.png" alt="plot of chunk unnamed-chunk-26" /><img src="figure/unnamed-chunk-26-3.png" alt="plot of chunk unnamed-chunk-26" /></p>
+</div>
+<div id="model" class="slide section level1">
+<h1>Model</h1>
+<ul>
+<li>Transformation</li>
+</ul>
+<p><img src="figure/unnamed-chunk-27-1.png" alt="plot of chunk unnamed-chunk-27" /><img src="figure/unnamed-chunk-27-2.png" alt="plot of chunk unnamed-chunk-27" /></p>
+</div>
+<div id="model-1" class="slide section level1">
+<h1>Model</h1>
+<p>*Unitroot test</p>
+<div class="figure">
+<img src="figure/unnamed-chunk-28-1.png" alt="plot of chunk unnamed-chunk-28" /><p class="caption">plot of chunk unnamed-chunk-28</p>
+</div>
+<pre><code>## 
+## Title:
+##  Augmented Dickey-Fuller Test
+## 
+## Test Results:
+##   PARAMETER:
+##     Lag Order: 1
+##   STATISTIC:
+##     DF: -2.8488
+##   P VALUE:
+##     t: 0.004414 
+##     n: 0.2462 
+## 
+## Description:
+##  Thu Nov 17 23:42:48 2016 by user: fretwan</code></pre>
+</div>
+<div id="model-2" class="slide section level1">
+<h1>Model</h1>
+<ul>
+<li>Arima for daily data</li>
+</ul>
+<p><img src="figure/unnamed-chunk-29-1.png" alt="plot of chunk unnamed-chunk-29" /><img src="figure/unnamed-chunk-29-2.png" alt="plot of chunk unnamed-chunk-29" /></p>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">q = 1</th>
+<th align="right">q = 2</th>
+<th align="right">q = 3</th>
+<th align="right">q = 4</th>
+<th align="right">q = 5</th>
+<th align="right">q = 6</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">p = 1</td>
+<td align="right">761.4009</td>
+<td align="right">758.0223</td>
+<td align="right">759.5391</td>
+<td align="right">761.0117</td>
+<td align="right">762.6393</td>
+<td align="right">761.8180</td>
+</tr>
+<tr class="even">
+<td align="left">p = 2</td>
+<td align="right">756.7932</td>
+<td align="right">757.6559</td>
+<td align="right">761.5421</td>
+<td align="right">763.3544</td>
+<td align="right">752.9992</td>
+<td align="right">754.8171</td>
+</tr>
+<tr class="odd">
+<td align="left">p = 3</td>
+<td align="right">758.1085</td>
+<td align="right">759.6225</td>
+<td align="right">761.6462</td>
+<td align="right">742.6388</td>
+<td align="right">755.0422</td>
+<td align="right">745.6297</td>
+</tr>
+<tr class="even">
+<td align="left">p = 4</td>
+<td align="right">758.5882</td>
+<td align="right">760.5588</td>
+<td align="right">752.7806</td>
+<td align="right">761.3868</td>
+<td align="right">745.6323</td>
+<td align="right">735.3792</td>
+</tr>
+<tr class="odd">
+<td align="left">p = 5</td>
+<td align="right">760.4014</td>
+<td align="right">761.3534</td>
+<td align="right">750.4274</td>
+<td align="right">752.1851</td>
+<td align="right">739.9149</td>
+<td align="right">738.9877</td>
+</tr>
+<tr class="even">
+<td align="left">p = 6</td>
+<td align="right">756.4634</td>
+<td align="right">756.8945</td>
+<td align="right">758.1480</td>
+<td align="right">753.4515</td>
+<td align="right">753.0975</td>
+<td align="right">741.4712</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="model-3" class="slide section level1">
+<h1>Model</h1>
+<ul>
+<li>Arima for daily data</li>
+</ul>
+<p>arma(4,6)</p>
+<pre><code>## 
+## Call:
+## arima(x = datadiff, order = c(4, 0, 6))
+## 
+## Coefficients:
+##           ar1     ar2      ar3      ar4     ma1      ma2     ma3     ma4
+##       -0.6869  0.1424  -0.7683  -0.8947  0.2213  -0.8379  0.5776  0.5575
+## s.e.   0.0326  0.0179   0.0146   0.0302  0.0578   0.0358     NaN  0.0503
+##           ma5      ma6  intercept
+##       -0.8288  -0.3161    -0.0019
+## s.e.      NaN   0.0570     0.0044
+## 
+## sigma^2 estimated as 0.4589:  log likelihood = -355.69,  aic = 735.38</code></pre>
+<p><img src="figure/unnamed-chunk-30-1.png" alt="plot of chunk unnamed-chunk-30" /><img src="figure/unnamed-chunk-30-2.png" alt="plot of chunk unnamed-chunk-30" /></p>
+<pre><code>## [1] 0.001544616</code></pre>
+<pre><code>## [1] 0.6784038</code></pre>
+<pre><code>## 
+##  Box-Ljung test
+## 
+## data:  data_forecast$residuals
+## X-squared = 27.375, df = 20, p-value = 0.125</code></pre>
+</div>
+<div id="model-4" class="slide section level1">
+<h1>Model</h1>
+<ul>
+<li>Arima for daily data</li>
+</ul>
+<p>Forecast</p>
+<div class="figure">
+<img src="figure/unnamed-chunk-31-1.png" alt="plot of chunk unnamed-chunk-31" /><p class="caption">plot of chunk unnamed-chunk-31</p>
+</div>
+</div>
+<div id="model-5" class="slide section level1">
+<h1>Model</h1>
+<ul>
+<li>Arima for daily data</li>
+</ul>
+<p>Residuals</p>
+<p><img src="figure/unnamed-chunk-32-1.png" alt="plot of chunk unnamed-chunk-32" /><img src="figure/unnamed-chunk-32-2.png" alt="plot of chunk unnamed-chunk-32" /></p>
+<pre><code>## [1] 0.001544616</code></pre>
+<pre><code>## [1] 0.6784038</code></pre>
+<pre><code>## 
+##  Box-Ljung test
+## 
+## data:  data_forecast$residuals
+## X-squared = 27.375, df = 20, p-value = 0.125</code></pre>
+</div>
+<div id="model-6" class="slide section level1">
+<h1>Model</h1>
+<ul>
+<li>Multi regression for unlogged daily data.</li>
+</ul>
+<p>steps</p>
+<pre><code>## Start:  AIC=-757.44
+## co_gt ~ s1_co + c6h6_gt + s2_nmhc + nox_gt + s3_nox + no2_gt + 
+##     s4_no2 + s5_o3 + t + rh + ah
+## 
+##           Df Sum of Sq    RSS     AIC
+## - s5_o3    1   0.00078 34.145 -759.44
+## - rh       1   0.00161 34.145 -759.43
+## - t        1   0.00215 34.146 -759.42
+## - s2_nmhc  1   0.03663 34.180 -759.08
+## - no2_gt   1   0.03748 34.181 -759.07
+## - s3_nox   1   0.11462 34.258 -758.30
+## &lt;none&gt;                 34.144 -757.44
+## - ah       1   0.25521 34.399 -756.91
+## - s4_no2   1   0.42783 34.572 -755.21
+## - nox_gt   1   0.51840 34.662 -754.32
+## - s1_co    1   0.65774 34.802 -752.96
+## - c6h6_gt  1   1.26984 35.414 -747.03
+## 
+## Step:  AIC=-759.44
+## co_gt ~ s1_co + c6h6_gt + s2_nmhc + nox_gt + s3_nox + no2_gt + 
+##     s4_no2 + t + rh + ah
+## 
+##           Df Sum of Sq    RSS     AIC
+## - rh       1   0.00166 34.146 -761.42
+## - t        1   0.00256 34.147 -761.41
+## - no2_gt   1   0.03733 34.182 -761.06
+## - s2_nmhc  1   0.04305 34.188 -761.01
+## - s3_nox   1   0.11695 34.262 -760.27
+## &lt;none&gt;                 34.145 -759.44
+## - ah       1   0.25585 34.400 -758.90
+## - s4_no2   1   0.43362 34.578 -757.14
+## - nox_gt   1   0.52427 34.669 -756.25
+## - s1_co    1   0.88494 35.030 -752.74
+## - c6h6_gt  1   1.31609 35.461 -748.58
+## 
+## Step:  AIC=-761.42
+## co_gt ~ s1_co + c6h6_gt + s2_nmhc + nox_gt + s3_nox + no2_gt + 
+##     s4_no2 + t + ah
+## 
+##           Df Sum of Sq    RSS     AIC
+## - t        1   0.01828 34.165 -763.24
+## - no2_gt   1   0.03760 34.184 -763.04
+## - s2_nmhc  1   0.04335 34.190 -762.99
+## - s3_nox   1   0.11533 34.262 -762.27
+## &lt;none&gt;                 34.146 -761.42
+## - ah       1   0.33752 34.484 -760.07
+## - s4_no2   1   0.48557 34.632 -758.62
+## - nox_gt   1   0.54100 34.687 -758.07
+## - s1_co    1   0.88695 35.033 -754.70
+## - c6h6_gt  1   1.50000 35.646 -748.80
+## 
+## Step:  AIC=-763.24
+## co_gt ~ s1_co + c6h6_gt + s2_nmhc + nox_gt + s3_nox + no2_gt + 
+##     s4_no2 + ah
+## 
+##           Df Sum of Sq    RSS     AIC
+## - no2_gt   1   0.03425 34.199 -764.90
+## - s2_nmhc  1   0.03483 34.199 -764.89
+## - s3_nox   1   0.12340 34.288 -764.01
+## &lt;none&gt;                 34.165 -763.24
+## - ah       1   0.31929 34.484 -762.07
+## - s4_no2   1   0.46753 34.632 -760.62
+## - nox_gt   1   0.56697 34.732 -759.64
+## - s1_co    1   0.90992 35.074 -756.30
+## - c6h6_gt  1   1.51510 35.680 -750.48
+## 
+## Step:  AIC=-764.9
+## co_gt ~ s1_co + c6h6_gt + s2_nmhc + nox_gt + s3_nox + s4_no2 + 
+##     ah
+## 
+##           Df Sum of Sq    RSS     AIC
+## - s2_nmhc  1   0.08322 34.282 -766.07
+## - s3_nox   1   0.12023 34.319 -765.70
+## &lt;none&gt;                 34.199 -764.90
+## - ah       1   0.32623 34.525 -763.67
+## - s4_no2   1   0.51842 34.717 -761.78
+## - nox_gt   1   0.53979 34.739 -761.57
+## - s1_co    1   0.91614 35.115 -757.91
+## - c6h6_gt  1   1.67186 35.871 -750.67
+## 
+## Step:  AIC=-766.07
+## co_gt ~ s1_co + c6h6_gt + nox_gt + s3_nox + s4_no2 + ah
+## 
+##           Df Sum of Sq    RSS     AIC
+## &lt;none&gt;                 34.282 -766.07
+## - ah       1   0.28139 34.563 -765.29
+## - s3_nox   1   0.42908 34.711 -763.84
+## - s4_no2   1   0.51634 34.798 -762.99
+## - nox_gt   1   0.52937 34.811 -762.86
+## - s1_co    1   0.84856 35.131 -759.76
+## - c6h6_gt  1   3.00548 37.288 -739.50</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = co_gt ~ s1_co + c6h6_gt + nox_gt + s3_nox + s4_no2 + 
+##     ah, data = dataframe_diff)
+## 
+## Coefficients:
+## (Intercept)        s1_co      c6h6_gt       nox_gt       s3_nox  
+##   0.0022600    0.0012169    0.0994965    0.0008037    0.0004198  
+##      s4_no2           ah  
+##   0.0012057   -0.4099709</code></pre>
+</div>
+<div id="model-7" class="slide section level1">
+<h1>Model</h1>
+<ul>
+<li>Multi regression for unlogged daily data.</li>
+</ul>
+<p>Regression</p>
+<pre><code>## 
+## Call:
+## lm(formula = co_gt ~ s1_co + c6h6_gt + nox_gt + s3_nox + s4_no2 + 
+##     ah, data = dataframe_diff)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -1.36838 -0.09424 -0.00215  0.10880  1.57937 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  0.0022600  0.0174171   0.130  0.89684    
+## s1_co        0.0012169  0.0004239   2.871  0.00435 ** 
+## c6h6_gt      0.0994965  0.0184146   5.403 1.25e-07 ***
+## nox_gt       0.0008037  0.0003544   2.268  0.02399 *  
+## s3_nox       0.0004198  0.0002056   2.042  0.04198 *  
+## s4_no2       0.0012057  0.0005384   2.240  0.02578 *  
+## ah          -0.4099709  0.2479749  -1.653  0.09922 .  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.3209 on 333 degrees of freedom
+## Multiple R-squared:  0.8587, Adjusted R-squared:  0.8562 
+## F-statistic: 337.4 on 6 and 333 DF,  p-value: &lt; 2.2e-16</code></pre>
+</div>
+<div id="model-8" class="slide section level1">
+<h1>Model</h1>
+<ul>
+<li>Multi regression for unlogged daily data.</li>
+</ul>
+<p>Residuals</p>
+<div class="figure">
+<img src="figure/unnamed-chunk-35-1.png" alt="plot of chunk unnamed-chunk-35" /><p class="caption">plot of chunk unnamed-chunk-35</p>
+</div>
+<pre><code>## [1] &quot;The mean of residuals:&quot;</code></pre>
+<pre><code>## [1] -1.714136e-17</code></pre>
+<pre><code>## [1] &quot;The standard deviation of residuals:&quot;</code></pre>
+<pre><code>## [1] 0.3180047</code></pre>
+</div>
+<div id="model-9" class="slide section level1">
+<h1>Model</h1>
+<ul>
+<li>Multi regression for logged daily data.</li>
+</ul>
+<p>steps</p>
+<pre><code>## Start:  AIC=-762.46
+## co_gt ~ s1_co + c6h6_gt + s2_nmhc + nox_gt + s3_nox + no2_gt + 
+##     s4_no2 + s5_o3 + t + rh + ah
+## 
+##           Df Sum of Sq    RSS     AIC
+## - s5_o3    1   0.00039 33.644 -764.46
+## - rh       1   0.02115 33.665 -764.25
+## - t        1   0.02786 33.672 -764.18
+## - s4_no2   1   0.07723 33.721 -763.68
+## - s3_nox   1   0.10909 33.753 -763.36
+## - ah       1   0.15057 33.794 -762.94
+## - no2_gt   1   0.19274 33.836 -762.52
+## &lt;none&gt;                 33.644 -762.46
+## - s2_nmhc  1   0.30394 33.948 -761.40
+## - nox_gt   1   1.01855 34.662 -754.32
+## - s1_co    1   1.12912 34.773 -753.24
+## - c6h6_gt  1   2.65028 36.294 -738.68
+## 
+## Step:  AIC=-764.46
+## co_gt ~ s1_co + c6h6_gt + s2_nmhc + nox_gt + s3_nox + no2_gt + 
+##     s4_no2 + t + rh + ah
+## 
+##           Df Sum of Sq    RSS     AIC
+## - rh       1   0.02089 33.665 -766.25
+## - t        1   0.02915 33.673 -766.16
+## - s4_no2   1   0.08012 33.724 -765.65
+## - s3_nox   1   0.11080 33.755 -765.34
+## - ah       1   0.15091 33.795 -764.93
+## - no2_gt   1   0.19253 33.837 -764.52
+## &lt;none&gt;                 33.644 -764.46
+## - s2_nmhc  1   0.32541 33.970 -763.18
+## - nox_gt   1   1.02480 34.669 -756.25
+## - s1_co    1   1.63432 35.278 -750.33
+## - c6h6_gt  1   2.68130 36.325 -740.39
+## 
+## Step:  AIC=-766.25
+## co_gt ~ s1_co + c6h6_gt + s2_nmhc + nox_gt + s3_nox + no2_gt + 
+##     s4_no2 + t + ah
+## 
+##           Df Sum of Sq    RSS     AIC
+## - t        1   0.00831 33.673 -768.16
+## - s3_nox   1   0.12374 33.789 -767.00
+## - s4_no2   1   0.12635 33.791 -766.97
+## - ah       1   0.13061 33.796 -766.93
+## - no2_gt   1   0.18229 33.847 -766.41
+## &lt;none&gt;                 33.665 -766.25
+## - s2_nmhc  1   0.32342 33.988 -764.99
+## - nox_gt   1   1.02231 34.687 -758.07
+## - s1_co    1   1.75273 35.418 -750.99
+## - c6h6_gt  1   2.74789 36.413 -741.57
+## 
+## Step:  AIC=-768.16
+## co_gt ~ s1_co + c6h6_gt + s2_nmhc + nox_gt + s3_nox + no2_gt + 
+##     s4_no2 + ah
+## 
+##           Df Sum of Sq    RSS     AIC
+## - s4_no2   1   0.12326 33.797 -768.92
+## - ah       1   0.12350 33.797 -768.92
+## - s3_nox   1   0.12823 33.802 -768.87
+## - no2_gt   1   0.17855 33.852 -768.36
+## &lt;none&gt;                 33.673 -768.16
+## - s2_nmhc  1   0.32167 33.995 -766.93
+## - nox_gt   1   1.05824 34.732 -759.64
+## - s1_co    1   1.74587 35.419 -752.98
+## - c6h6_gt  1   2.76321 36.437 -743.35
+## 
+## Step:  AIC=-768.92
+## co_gt ~ s1_co + c6h6_gt + s2_nmhc + nox_gt + s3_nox + no2_gt + 
+##     ah
+## 
+##           Df Sum of Sq    RSS     AIC
+## - ah       1    0.0123 33.809 -770.80
+## - s3_nox   1    0.0776 33.874 -770.14
+## &lt;none&gt;                 33.797 -768.92
+## - no2_gt   1    0.2949 34.091 -767.97
+## - s2_nmhc  1    0.3240 34.121 -767.68
+## - nox_gt   1    1.3441 35.141 -757.66
+## - s1_co    1    1.8406 35.637 -752.89
+## - c6h6_gt  1    4.3387 38.135 -729.85
+## 
+## Step:  AIC=-770.8
+## co_gt ~ s1_co + c6h6_gt + s2_nmhc + nox_gt + s3_nox + no2_gt
+## 
+##           Df Sum of Sq    RSS     AIC
+## - s3_nox   1    0.0965 33.905 -771.83
+## &lt;none&gt;                 33.809 -770.80
+## - no2_gt   1    0.2826 34.091 -769.97
+## - s2_nmhc  1    0.3123 34.121 -769.67
+## - nox_gt   1    1.3515 35.160 -759.47
+## - s1_co    1    2.6254 36.434 -747.37
+## - c6h6_gt  1    4.3378 38.147 -731.75
+## 
+## Step:  AIC=-771.83
+## co_gt ~ s1_co + c6h6_gt + s2_nmhc + nox_gt + no2_gt
+## 
+##           Df Sum of Sq    RSS     AIC
+## &lt;none&gt;                 33.905 -771.83
+## - no2_gt   1    0.2399 34.145 -771.43
+## - s2_nmhc  1    0.7758 34.681 -766.14
+## - nox_gt   1    1.3248 35.230 -760.79
+## - s1_co    1    2.6631 36.568 -748.12
+## - c6h6_gt  1    7.3698 41.275 -706.95</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = co_gt ~ s1_co + c6h6_gt + s2_nmhc + nox_gt + no2_gt, 
+##     data = dataframe_diff)
+## 
+## Coefficients:
+## (Intercept)        s1_co      c6h6_gt      s2_nmhc       nox_gt  
+##   7.153e-05    1.536e-03    1.885e-01   -2.197e-03    4.073e-01  
+##      no2_gt  
+##  -2.382e-03</code></pre>
+</div>
+<div id="model-10" class="slide section level1">
+<h1>Model</h1>
+<ul>
+<li>Multi regression for unlogged daily data.</li>
+</ul>
+<p>Regression</p>
+<pre><code>## 
+## Call:
+## lm(formula = co_gt ~ s1_co + c6h6_gt + s2_nmhc + nox_gt + no2_gt, 
+##     data = dataframe_diff)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -1.2804 -0.1228  0.0007  0.1064  1.6787 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  7.153e-05  1.728e-02   0.004  0.99670    
+## s1_co        1.536e-03  3.000e-04   5.122 5.12e-07 ***
+## c6h6_gt      1.885e-01  2.213e-02   8.521 5.53e-16 ***
+## s2_nmhc     -2.197e-03  7.948e-04  -2.765  0.00602 ** 
+## nox_gt       4.073e-01  1.127e-01   3.613  0.00035 ***
+## no2_gt      -2.382e-03  1.549e-03  -1.537  0.12515    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.3186 on 334 degrees of freedom
+## Multiple R-squared:  0.8603, Adjusted R-squared:  0.8582 
+## F-statistic: 411.3 on 5 and 334 DF,  p-value: &lt; 2.2e-16</code></pre>
+</div>
+<div id="model-11" class="slide section level1">
+<h1>Model</h1>
+<ul>
+<li>Multi regression for unlogged daily data.</li>
+</ul>
+<p>Residuals</p>
+<p><img src="figure/unnamed-chunk-38-1.png" alt="plot of chunk unnamed-chunk-38" /><img src="figure/unnamed-chunk-38-2.png" alt="plot of chunk unnamed-chunk-38" /></p>
+<pre><code>## [1] &quot;The mean of residuals:&quot;</code></pre>
+<pre><code>## [1] 6.226569e-18</code></pre>
+<pre><code>## [1] &quot;The standard deviation of residuals:&quot;</code></pre>
+<pre><code>## [1] 0.3162525</code></pre>
+</div>
+<div id="description-10" class="slide section level1">
+<h1>Description</h1>
+<ul>
+<li>Plot time series data(weekly)</li>
+</ul>
+<p>Take the average value per seven days</p>
+<div class="figure">
+<img src="figure/unnamed-chunk-39-1.png" alt="plot of chunk unnamed-chunk-39" /><p class="caption">plot of chunk unnamed-chunk-39</p>
+</div>
+</div>
+<div class="slide section level1">
+
+</div>
+</body>
+</html>
