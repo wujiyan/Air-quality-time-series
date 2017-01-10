@@ -1,0 +1,169 @@
+---
+
+```{r, echo = FALSE, results='hide', message=FALSE, warning = FALSE, fig.align = 'center'}
+library(ggplot2)
+fileLoc <- "C:\\1-vanderbilt\\academic\\seminar\\AirQualityUCI"
+
+raw_data <- read.csv(paste(fileLoc, "AirQualityUCI.csv", sep = '/'), stringsAsFactors = FALSE)
+raw_data <- raw_data[1:9357,]
+
+raw_data <- raw_data[,-(16:17)]
+
+names(raw_data) <- c('Date','Time','CO_GT',"S1_CO",'NMHC_GT','C6H6_GT','S2_NMHC','NOx_GT','S3_NOx','NO2_GT',"S4_NO2",'S5_O3','T','RH','AH')
+droplist <- c('NMHC_GT','C6H6_GT','NOx_GT','NO2_GT')
+raw_data <- raw_data[!(names(raw_data)%in%droplist)]
+
+count_na <- function(list){
+  number <- sum(list == -200)
+}
+
+number.of.na <- t(sapply(raw_data, count_na))
+
+raw_data_1 <- raw_data[,1:2]
+raw_data_2 <- raw_data[,-(1:2)]
+
+for(val in names(raw_data_2)){
+  raw_data_2[val] <- replace(raw_data_2[val], raw_data_2[val] == -200, -1)
+}
+
+mod_data <- cbind(raw_data_1, raw_data_2)
+
+mod_data$TS <- paste(mod_data$Date, mod_data$Time, sep = ' ')
+
+mod_data$TS <- strptime(mod_data$TS, "%m/%d/%Y %H:%M:%S", tz = 'UTC')
+mod_data$Time <- strptime(mod_data$Time, '%H:%M:%S')
+base_line <- strptime('3/9/2004','%m/%d/%Y')
+mod_data$Date <- strptime(mod_data$Date,'%m/%d/%Y')
+mod_data$day_diff <- round(difftime(mod_data$Date, base_line, units = 'days'))
+mod_data$hour <- as.numeric(format(mod_data$Time, '%H'))
+
+na_list <- c("CO_GT",'S1_CO','NMHC_GT','NOx_GT','NO2_GT')
+
+data_valid <- mod_data[mod_data['CO_GT'] == -1,]
+data_valid <- data_valid[data_valid$hour == '04',]
+
+library(dplyr)
+mod_data$Date <- as.POSIXct(mod_data$Date)
+mod_data$Time <- as.POSIXct(mod_data$Time)
+mod_data$TS <- as.POSIXct(mod_data$TS)
+dataByDay <- mod_data %>%
+  group_by(Date) %>%
+  summarise(num_CO_GT = sum(CO_GT == -1),
+            num_S1_CO = sum(S1_CO == -1))
+
+library(reshape2)
+library(lattice)
+library(GGally)
+
+for(var in names(mod_data)){
+  mod_data[var] = replace(mod_data[var], mod_data[var] == -1, NA)
+}
+
+data_without_na <- na.omit(mod_data)
+
+comp_data_by_day <- data_without_na %>%
+  group_by(Date) %>%
+  summarise(day_diff = mean(day_diff),
+            co_gt = mean(CO_GT),
+            s1_co = mean(S1_CO),
+            s2_nmhc = mean(S2_NMHC),
+            s3_nox = mean(S3_NOx),
+            s4_no2 = mean(S4_NO2),
+            s5_o3 = mean(S5_O3),
+            t = mean(T),
+            rh = mean(RH),
+            ah = mean(AH))
+```
+
+
+
+#ARIMA Model
+
+* Pick a combination of p and q based on AIC
+
+```{r, echo = FALSE, message=FALSE, warning = FALSE}
+aic_mat <- matrix(1:135, nrow = 9, ncol = 15, byrow = FALSE, dimnames=list(c("p = 1","p = 2","p = 3","p = 4","p = 5","p = 6","p = 7","p = 8", "p = 9"),c("q = 1","q = 2","q = 3","q = 4","q = 5","q = 6","q = 7","q = 8", "q = 9","q = 10","1 = 11","q = 12", "q = 13", "q = 14", "q = 15")))
+for(x in c(1:9)){
+  for(y in c(1:15)){
+    mo <- arima(data, order = c(x,0,y))
+    aic_mat[x,y] <- mo$aic
+  }
+}
+
+
+kable(aic_mat, format = 'markdown')
+```
+
+
+---
+
+#ARIMA Model 
+
+* Arima(7,0,12)
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+arima_model <- arima(data, order = c(7,0,12))
+arima_model
+```
+
+---
+
+#ARIMA Model
+
+* Forecast
+
+```{r,echo = FALSE, message = FALSE, warning = FALSE, fig.align="center",fig.cap=""}
+library('forecast')
+data_forecast <- forecast.Arima(arima_model, h = 50)
+plot.forecast(data_forecast)
+```
+
+
+---
+
+#Model
+
+* Residuals analysis
+
+plot
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, fig.align="center",fig.cap=""}
+plot.ts(data_forecast$residuals)
+```
+
+---
+
+#Model
+
+* Residuals analysis
+
+acf
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, fig.align="center",fig.cap=""}
+acf(data_forecast$residuals, lag.max = 20)
+```
+
+---
+
+#Model
+
+* Residuals analysis
+
+pacf
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, fig.align="center",fig.cap=""}
+pacf(data_forecast$residuals, lag.max = 20)
+```
+
+---
+
+#Model
+
+* Residuals analysis
+
+Ljung-Box
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+Box.test(data_forecast$residuals, lag=20, type="Ljung-Box")
+```
+

@@ -1,0 +1,140 @@
+---
+
+```{r, echo = FALSE, results='hide', message=FALSE, warning = FALSE, fig.align = 'center'}
+library(ggplot2)
+fileLoc <- "C:\\1-vanderbilt\\academic\\seminar\\AirQualityUCI"
+
+raw_data <- read.csv(paste(fileLoc, "AirQualityUCI.csv", sep = '/'), stringsAsFactors = FALSE)
+raw_data <- raw_data[1:9357,]
+
+raw_data <- raw_data[,-(16:17)]
+
+names(raw_data) <- c('Date','Time','CO_GT',"S1_CO",'NMHC_GT','C6H6_GT','S2_NMHC','NOx_GT','S3_NOx','NO2_GT',"S4_NO2",'S5_O3','T','RH','AH')
+droplist <- c('NMHC_GT','C6H6_GT','NOx_GT','NO2_GT')
+raw_data <- raw_data[!(names(raw_data)%in%droplist)]
+
+count_na <- function(list){
+  number <- sum(list == -200)
+}
+
+number.of.na <- t(sapply(raw_data, count_na))
+
+raw_data_1 <- raw_data[,1:2]
+raw_data_2 <- raw_data[,-(1:2)]
+
+for(val in names(raw_data_2)){
+  raw_data_2[val] <- replace(raw_data_2[val], raw_data_2[val] == -200, -1)
+}
+
+mod_data <- cbind(raw_data_1, raw_data_2)
+
+mod_data$TS <- paste(mod_data$Date, mod_data$Time, sep = ' ')
+
+mod_data$TS <- strptime(mod_data$TS, "%m/%d/%Y %H:%M:%S", tz = 'UTC')
+mod_data$Time <- strptime(mod_data$Time, '%H:%M:%S')
+base_line <- strptime('3/9/2004','%m/%d/%Y')
+mod_data$Date <- strptime(mod_data$Date,'%m/%d/%Y')
+mod_data$day_diff <- round(difftime(mod_data$Date, base_line, units = 'days'))
+mod_data$hour <- as.numeric(format(mod_data$Time, '%H'))
+
+na_list <- c("CO_GT",'S1_CO','NMHC_GT','NOx_GT','NO2_GT')
+
+data_valid <- mod_data[mod_data['CO_GT'] == -1,]
+data_valid <- data_valid[data_valid$hour == '04',]
+
+library(dplyr)
+mod_data$Date <- as.POSIXct(mod_data$Date)
+mod_data$Time <- as.POSIXct(mod_data$Time)
+mod_data$TS <- as.POSIXct(mod_data$TS)
+dataByDay <- mod_data %>%
+  group_by(Date) %>%
+  summarise(num_CO_GT = sum(CO_GT == -1),
+            num_S1_CO = sum(S1_CO == -1))
+
+library(reshape2)
+library(lattice)
+library(GGally)
+
+for(var in names(mod_data)){
+  mod_data[var] = replace(mod_data[var], mod_data[var] == -1, NA)
+}
+
+data_without_na <- na.omit(mod_data)
+
+comp_data_by_day <- data_without_na %>%
+  group_by(Date) %>%
+  summarise(day_diff = mean(day_diff),
+            co_gt = mean(CO_GT),
+            s1_co = mean(S1_CO),
+            s2_nmhc = mean(S2_NMHC),
+            s3_nox = mean(S3_NOx),
+            s4_no2 = mean(S4_NO2),
+            s5_o3 = mean(S5_O3),
+            t = mean(T),
+            rh = mean(RH),
+            ah = mean(AH))
+```
+
+#VAR model
+
+* Choose variables
+
+co_gt ~ s1_co, s2_nmhc, s3_nox, s4_no2, rh
+
+---
+
+#VAR model
+
+* Determine the lag order based on BIC
+
+```{r, echo = FALSE}
+library(vars)
+var_list <- c("co_gt","s2_nmhc","s4_no2","rh","s1_co","s3_nox")
+data1 <- comp_data_by_day[var_list]
+
+library(nlme)
+
+table <- matrix(1:20, nrow = 1, ncol = 20, byrow = FALSE,dimnames=list('BIC',c("k = 1","k = 2","k = 3","k = 4","k = 5","k = 6","k = 7","k = 8", "k = 9","k = 10","k = 11","k = 12", "k = 13", "k = 14", "k = 15","k = 16","k = 17","k = 18","k = 19","k = 20")))
+for(i in 1:20){
+  var_model1 <- VAR(data1, p = i, type = 'const')
+  bic <- BIC(var_model1)
+  table[1,i] <- bic
+}
+
+kable(table, format = 'markdown')
+```
+
+---
+
+#VAR model
+
+* Modeling detail
+
+```{r, echo = FALSE}
+var_model1 <- VAR(data1, p = 1, type = 'const')
+
+summary(var_model1)
+```
+
+---
+
+#VAR model
+
+* predict
+
+```{r, echo = FALSE, message = FALSE, warning=FALSE}
+library(forecast)
+predictions <- predict(var_model1, n.ahead = 50)
+plot(predictions, 'single')
+```
+
+---
+
+#VAR model
+
+* Granger test
+
+```{r, echo = FALSE}
+causality(var_model1, cause = c("s1_co","s2_nmhc","s4_no2", "rh","s3_nox"))
+```
+

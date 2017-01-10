@@ -1,0 +1,232 @@
+---
+
+```{r, echo = FALSE, results='hide', message=FALSE, warning = FALSE, fig.align = 'center'}
+library(ggplot2)
+fileLoc <- "C:\\1-vanderbilt\\academic\\seminar\\AirQualityUCI"
+
+raw_data <- read.csv(paste(fileLoc, "AirQualityUCI.csv", sep = '/'), stringsAsFactors = FALSE)
+raw_data <- raw_data[1:9357,]
+
+raw_data <- raw_data[,-(16:17)]
+
+names(raw_data) <- c('Date','Time','CO_GT',"S1_CO",'NMHC_GT','C6H6_GT','S2_NMHC','NOx_GT','S3_NOx','NO2_GT',"S4_NO2",'S5_O3','T','RH','AH')
+droplist <- c('NMHC_GT','C6H6_GT','NOx_GT','NO2_GT')
+raw_data <- raw_data[!(names(raw_data)%in%droplist)]
+
+count_na <- function(list){
+  number <- sum(list == -200)
+}
+
+number.of.na <- t(sapply(raw_data, count_na))
+
+raw_data_1 <- raw_data[,1:2]
+raw_data_2 <- raw_data[,-(1:2)]
+
+for(val in names(raw_data_2)){
+  raw_data_2[val] <- replace(raw_data_2[val], raw_data_2[val] == -200, -1)
+}
+
+mod_data <- cbind(raw_data_1, raw_data_2)
+
+mod_data$TS <- paste(mod_data$Date, mod_data$Time, sep = ' ')
+
+mod_data$TS <- strptime(mod_data$TS, "%m/%d/%Y %H:%M:%S", tz = 'UTC')
+mod_data$Time <- strptime(mod_data$Time, '%H:%M:%S')
+base_line <- strptime('3/9/2004','%m/%d/%Y')
+mod_data$Date <- strptime(mod_data$Date,'%m/%d/%Y')
+mod_data$day_diff <- round(difftime(mod_data$Date, base_line, units = 'days'))
+mod_data$hour <- as.numeric(format(mod_data$Time, '%H'))
+
+na_list <- c("CO_GT",'S1_CO','NMHC_GT','NOx_GT','NO2_GT')
+
+data_valid <- mod_data[mod_data['CO_GT'] == -1,]
+data_valid <- data_valid[data_valid$hour == '04',]
+
+library(dplyr)
+mod_data$Date <- as.POSIXct(mod_data$Date)
+mod_data$Time <- as.POSIXct(mod_data$Time)
+mod_data$TS <- as.POSIXct(mod_data$TS)
+dataByDay <- mod_data %>%
+  group_by(Date) %>%
+  summarise(num_CO_GT = sum(CO_GT == -1),
+            num_S1_CO = sum(S1_CO == -1))
+
+library(reshape2)
+#library(mice)
+library(lattice)
+library(GGally)
+
+for(var in names(mod_data)){
+  mod_data[var] = replace(mod_data[var], mod_data[var] == -1, NA)
+}
+
+data_without_na <- na.omit(mod_data)
+
+comp_data_by_day <- data_without_na %>%
+  group_by(Date) %>%
+  summarise(day_diff = mean(day_diff),
+            co_gt = mean(CO_GT),
+            s1_co = mean(S1_CO),
+            s2_nmhc = mean(S2_NMHC),
+            s3_nox = mean(S3_NOx),
+            s4_no2 = mean(S4_NO2),
+            s5_o3 = mean(S5_O3),
+            t = mean(T),
+            rh = mean(RH),
+            ah = mean(AH))
+```
+
+# Linear regression
+
+* Correlation and density
+
+```{r, echo = FALSE, results='hide', message=FALSE, warning = FALSE, fig.cap="", fig.align = 'center'}
+mod_data_1 <- comp_data_by_day[,c(1,2,12,14,13)]
+mod_data_2 <- comp_data_by_day[,-c(1,2,12,14,13)]
+
+my_fn <- function(data, mapping, ...){
+  p <- ggplot(data = data, mapping = mapping) + 
+    geom_point() + 
+    geom_smooth(method=lm, fill="blue", color="blue", ...)
+  p
+}
+
+g = ggpairs(na.omit(mod_data_2),lower = list(continuous = my_fn))
+
+g
+
+```
+
+---
+
+# Linear regression
+
+* Transformation
+
+Take log and square root. 
+
+```{r, echo = FALSE, results='hide', message=FALSE, warning = FALSE, fig.cap="", fig.align = 'center'}
+
+plot(density(sqrt(comp_data_by_day$co_gt)), main = 'CO_GT with square root')
+plot(density(log(comp_data_by_day$s1_co)), main = 'S1_CO with log')
+plot(density(log(comp_data_by_day$s3_nox)),main = 'S3_NOx with log')
+plot(density(sqrt(comp_data_by_day$s5_o3)), main = 'S5_O3 with square root')
+
+```
+
+Result was not good.
+So no transformation was taken finally.
+
+---
+
+# Linear regression
+
+* adf test
+
+If p-value = 0.01, the actual p-value is smaller than printed one.
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+library(tseries)
+adf_co <- adf.test(comp_data_by_day$co_gt, k = 3)
+adf_s1 <- adf.test(comp_data_by_day$s1_co, k = 3)
+adf_s2 <- adf.test(comp_data_by_day$s2_nmhc, k = 3)
+adf_s3<- adf.test(comp_data_by_day$s3_nox, k = 3)
+adf_s4 <- adf.test(comp_data_by_day$s4_no2, k = 3)
+adf_s5 <- adf.test(comp_data_by_day$s5_o3, k = 3)
+adf_t <- adf.test(comp_data_by_day$t, k = 3)
+adf_rh <- adf.test(comp_data_by_day$rh, k = 3)
+adf_ah <- adf.test(comp_data_by_day$ah, k = 3)
+
+adf_list <- c(adf_co$p.value, adf_s1$p.value, adf_s2$p.value, adf_s3$p.value, adf_s4$p.value, adf_s5$p.value, adf_t$p.value, adf_rh$p.value, adf_ah$p.value)
+
+mat1 <- matrix(1:9, nrow = 1, ncol = 9, dimnames=list("p_value",c("co_gt","s1_co","s2_nmhc",                                                                  "s3_nox","s4_no2","s5_o3","t","rh","ah")))
+for(i in 1:9){
+  mat1[1,i] <- adf_list[i]
+}
+
+kable(mat1)
+```
+
+
+---
+
+# Linear regression
+
+* Steps
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+library(nlme)
+
+data2 <- comp_data_by_day[,c(3,4,5,6,7,8,10,11)]
+dataframe_diff <- as.data.frame(sapply(comp_data_by_day, diff))
+fit_lm <- lm(co_gt~s1_co+s2_nmhc+s3_nox+s4_no2+s5_o3+rh+ah, data = data2)
+
+step(fit_lm, data = data2, direction = 'backward')
+
+data3 <- data2
+data3$co_gt <- sqrt(data3$co_gt)
+data3$s1_co <- log(data3$s1_co)
+data3$s3_nox <- log(data3$s3_nox)
+data3$s5_o3 <- sqrt(data3$s5_o3)
+
+fit_lm2 <- lm(co_gt~s1_co+s2_nmhc+s3_nox+s4_no2+s5_o3+rh+ah, data = data3)
+
+step(fit_lm, data = data3, direction = 'backward')
+
+```
+
+---
+
+# Linear regression
+
+* Regression
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+fit_1 <- lm(co_gt ~ s1_co + s2_nmhc + s3_nox + s4_no2 + rh, data = data2)
+summary(fit_1)
+
+fit_2 <- lm(co_gt ~ s1_co + s2_nmhc + s3_nox + s4_no2 + rh, data = data3)
+summary(fit_2)
+
+```
+
+co_gt has positive relationships with the co, nmhc, nox and ah.
+
+co_gt has negative relationships with no2.
+
+---
+
+# Linear regression
+
+* Estimate and Residuals
+
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+plot.ts(fit_1$fitted.values)
+
+plot.ts(fit_1$residuals)
+
+
+
+```
+
+---
+
+# Linear regression
+
+* Estimate and Residuals
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+Box.test(fit_1$residuals)
+
+Box.test(fit_2$residuals)
+
+```
+
+---
+
+# Linear regression
+
+* Problem
+
+Residuals are not white noise. 

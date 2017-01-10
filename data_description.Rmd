@@ -1,0 +1,214 @@
+---
+
+```{r, echo = FALSE, results='hide', message=FALSE, warning = FALSE, fig.align = 'center'}
+library(ggplot2)
+fileLoc <- "C:\\1-vanderbilt\\academic\\seminar\\AirQualityUCI"
+
+raw_data <- read.csv(paste(fileLoc, "AirQualityUCI.csv", sep = '/'), stringsAsFactors = FALSE)
+raw_data <- raw_data[1:9357,]
+```
+
+# What the data look like
+
+* Dimention and variables
+
+```{r, echo=FALSE, message=FALSE, warning = FALSE, fig.align = 'center'}
+raw_data <- raw_data[,-(16:17)]
+
+names(raw_data) <- c('Date','Time','CO_GT',"S1_CO",'NMHC_GT','C6H6_GT','S2_NMHC','NOx_GT','S3_NOx','NO2_GT',"S4_NO2",'S5_O3','T','RH','AH')
+droplist <- c('NMHC_GT','C6H6_GT','NOx_GT','NO2_GT')
+raw_data <- raw_data[!(names(raw_data)%in%droplist)]
+str(raw_data)
+kable(head(raw_data))
+```
+
+---
+
+# What the data look like
+
+* Missing values analysis
+
+How many missing values for each variable.
+
+```{r, echo = FALSE, message=FALSE, warning = FALSE, fig.align = 'center'}
+count_na <- function(list){
+  number <- sum(list == -200)
+}
+
+number.of.na <- t(sapply(raw_data, count_na))
+kable(as.data.frame(number.of.na), format = 'markdown')
+
+raw_data_1 <- raw_data[,1:2]
+raw_data_2 <- raw_data[,-(1:2)]
+
+for(val in names(raw_data_2)){
+  raw_data_2[val] <- replace(raw_data_2[val], raw_data_2[val] == -200, -1)
+}
+
+mod_data <- cbind(raw_data_1, raw_data_2)
+
+```
+
+---
+
+# What the data look like
+
+* Missing values analysis
+
+```{r, echo = FALSE, results='hide', message=FALSE, warning = FALSE}
+mod_data$TS <- paste(mod_data$Date, mod_data$Time, sep = ' ')
+
+mod_data$TS <- strptime(mod_data$TS, "%m/%d/%Y %H:%M:%S", tz = 'UTC')
+mod_data$Time <- strptime(mod_data$Time, '%H:%M:%S')
+base_line <- strptime('3/9/2004','%m/%d/%Y')
+mod_data$Date <- strptime(mod_data$Date,'%m/%d/%Y')
+mod_data$day_diff <- round(difftime(mod_data$Date, base_line, units = 'days'))
+mod_data$hour <- as.numeric(format(mod_data$Time, '%H'))
+```
+
+1. Distribution of missing values of CO_GT
+
+```{r, echo = FALSE, results='hide', message=FALSE, warning = FALSE}
+na_list <- c("CO_GT",'S1_CO','NMHC_GT','NOx_GT','NO2_GT')
+
+data_valid <- mod_data[mod_data['CO_GT'] == -1,]
+
+ggplot(data = data_valid, aes(x = day_diff, y = hour))+
+  geom_point(col = 'red') +
+  ggtitle("Distributions of missing values across time and date for CO_GT")
+
+ggplot(data = data_valid) +
+  geom_bar(mapping = aes(x = hour)) +
+  ggtitle("Distributions of missing values across hour for CO_GT")
+
+data_valid <- data_valid[data_valid$hour == '04',]
+```
+
+2.Distribution of missing values of S1_CO
+
+```{r, echo = FALSE, results='hide', message=FALSE, warning = FALSE}
+data_valid <- mod_data[mod_data['S1_CO'] == -1,]
+
+ggplot(data = data_valid, aes(x = day_diff, y = hour))+
+  geom_point(col = 'red') +
+  ggtitle("Distributions of missing values across time and date for multi sensor device")
+
+ggplot(data = data_valid) +
+  geom_bar(mapping = aes(x = hour)) +
+  ggtitle("Distributions of missing values across hour for multi sensor device")
+
+```
+
+---
+
+# What the data look like
+
+* Missing values analysis
+
+This graph shows the concentration of missing values in detail. for each kind of gas, how many missing values does they each have every day. 
+
+```{r, echo = FALSE, results='hide', message=FALSE, warning = FALSE, fig.cap="", fig.align = 'center'}
+library(dplyr)
+mod_data$Date <- as.POSIXct(mod_data$Date)
+mod_data$Time <- as.POSIXct(mod_data$Time)
+mod_data$TS <- as.POSIXct(mod_data$TS)
+dataByDay <- mod_data %>%
+  group_by(Date) %>%
+  summarise(num_CO_GT = sum(CO_GT == -1),
+            num_S1_CO = sum(S1_CO == -1))
+```
+
+```{r, echo = FALSE, results='hide', message=FALSE, warning = FALSE,  fig.cap="", fig.align = 'center'}
+library(reshape2)
+melt_data <- melt(dataByDay, id.vars = 'Date')
+ggplot(melt_data, aes(x = Date, y = value, colour = variable)) + geom_point()+ggtitle('distribution of missing values across date')
+```
+
+---
+
+# What the data look like
+
+* Missing values analysis
+
+Most missing values are concentrated on several specific days.
+
+Certified reference analyzer did not detect at 4AM everyday. 
+
+They are missing completely at random. 
+
+---
+
+# What the data look like
+
+* How to handle missing values?
+
+Simply delete samples with NA values as we would still have enough samples(9357). 
+
+---
+
+# What the data look like
+
+* Plot time series data of CO_GT(hourly)
+
+```{r, echo = FALSE, results='hide', message=FALSE, warning = FALSE,  fig.cap="", fig.align = 'center'}
+library(lattice)
+library(GGally)
+
+for(var in names(mod_data)){
+  mod_data[var] = replace(mod_data[var], mod_data[var] == -1, NA)
+}
+
+data_without_na <- na.omit(mod_data)
+
+#comp_data <- cbind(mod_data_1, comp_data_2)
+y_data <- data_without_na[data_without_na$day_diff %in% c(1,2,3,4,5,6,7),]
+ggplot(data = data_without_na, aes(y = CO_GT, x = TS))+
+  geom_line()+
+  ggtitle('value by hour')
+
+```
+
+To see the detailed pattern.
+
+```{r, echo = FALSE, results='hide', message=FALSE, warning = FALSE, fig.cap="", fig.align = 'center'}
+#comp_data <- cbind(mod_data_1, comp_data_2)
+y_data <- data_without_na[data_without_na$day_diff %in% c(1,2,3,4,5,6,7,8,9,10),]
+ggplot(data = y_data, aes(y = CO_GT, x = TS))+
+  geom_line()+
+  ggtitle('value by hour within 10 days')
+
+```
+
+---
+
+# What the data look like
+
+* Get the daily average data
+
+Hourly data:
+
+- Too many conseuctive missing values
+
+- Influence of peak hours
+
+
+```{r, echo = FALSE, results='hide', message=FALSE, warning = FALSE, fig.cap="", fig.align = 'center'}
+comp_data_by_day <- data_without_na %>%
+  group_by(Date) %>%
+  summarise(day_diff = mean(day_diff),
+            co_gt = mean(CO_GT),
+            s1_co = mean(S1_CO),
+            s2_nmhc = mean(S2_NMHC),
+            s3_nox = mean(S3_NOx),
+            s4_no2 = mean(S4_NO2),
+            s5_o3 = mean(S5_O3),
+            t = mean(T),
+            rh = mean(RH),
+            ah = mean(AH))
+
+ggplot(data = comp_data_by_day, aes(y = co_gt, x = day_diff))+
+  geom_line()+
+  ggtitle('Daily concentration of CO')
+
+```
+
